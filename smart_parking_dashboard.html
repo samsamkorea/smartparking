@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Parking System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .zone, .dashboard {
+      background: #000;
+      color: orange;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 10px auto;
+      width: 300px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .zone h2, .dashboard h2 {
+      margin: 0 0 10px;
+    }
+    .status, .dashboard-display {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+    button, input[type="number"] {
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    #gateStatus {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin: 20px;
+      color: green;
+    }
+    .dashboard-display span {
+      display: inline-block;
+      min-width: 50px;
+      background: #222;
+      padding: 5px 10px;
+      color: orange;
+      font-size: 1.4em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Smart Parking System</h1>
+  <div id="gateStatus">OPEN</div>
+  <div>Total Cars Parked: <span id="totalCount">0</span> / <span id="maxDisplay">20</span></div>
+
+  <div class="dashboard">
+    <h2>LED Display Dashboard</h2>
+    <div class="dashboard-display">Daily Forecast: <span id="forecastDisplay">5000</span></div>
+    <div class="dashboard-display">Total Capacity: <span id="totalCapDisplay">20</span></div>
+    <div class="dashboard-display">Current Occupancy: <span id="currentOccDisplay">0</span></div>
+    <div class="dashboard-display">Fill % (Goal): <span id="fillGoal">0</span></div>
+    <div>
+      <input type="number" id="forecastInput" placeholder="Set Daily Forecast">
+      <button onclick="setForecast()">Update Forecast</button>
+    </div>
+  </div>
+
+  <div class="zone">
+    <h2>Compact</h2>
+    <div class="status" id="compact">0 / 6</div>
+    <button class="park-btn" data-type="compact">Park Car</button>
+    <button class="remove-btn" data-type="compact">Remove Car</button>
+  </div>
+
+  <div class="zone">
+    <h2>Standard</h2>
+    <div class="status" id="standard">0 / 8</div>
+    <button class="park-btn" data-type="standard">Park Car</button>
+    <button class="remove-btn" data-type="standard">Remove Car</button>
+  </div>
+
+  <div class="zone">
+    <h2>Large</h2>
+    <div class="status" id="large">0 / 4</div>
+    <button class="park-btn" data-type="large">Park Car</button>
+    <button class="remove-btn" data-type="large">Remove Car</button>
+  </div>
+
+  <div class="zone">
+    <h2>Disabled</h2>
+    <div class="status" id="disabled">0 / 2</div>
+    <button class="park-btn" data-type="disabled">Park Car</button>
+    <button class="remove-btn" data-type="disabled">Remove Car</button>
+  </div>
+
+  <script>
+    const maxCapacity = 20;
+    let currentCount = 0;
+    let forecast = 5000;
+
+    const zoneCapacity = {
+      compact: 6,
+      standard: 8,
+      large: 4,
+      disabled: 2
+    };
+    const zoneStatus = {
+      compact: 0,
+      standard: 0,
+      large: 0,
+      disabled: 0
+    };
+
+    function updateDisplay() {
+      document.getElementById("totalCount").innerText = currentCount;
+      document.getElementById("maxDisplay").innerText = maxCapacity;
+      document.getElementById("totalCapDisplay").innerText = maxCapacity;
+      document.getElementById("currentOccDisplay").innerText = currentCount;
+      document.getElementById("fillGoal").innerText = ((currentCount / maxCapacity) * 100).toFixed(1);
+
+      for (const zone in zoneStatus) {
+        document.getElementById(zone).innerText = `${zoneStatus[zone]} / ${zoneCapacity[zone]}`;
+      }
+      document.getElementById("gateStatus").innerText = currentCount < maxCapacity ? "OPEN" : "CLOSED";
+    }
+
+    function parkCar(type) {
+      if (currentCount >= maxCapacity) return alert("Parking Full!");
+      if (zoneStatus[type] >= zoneCapacity[type]) return alert(`${type} zone full!`);
+
+      currentCount++;
+      zoneStatus[type]++;
+      updateDisplay();
+    }
+
+    function removeCar(type) {
+      if (zoneStatus[type] <= 0) return alert(`No cars in ${type} zone!`);
+
+      currentCount--;
+      zoneStatus[type]--;
+      updateDisplay();
+    }
+
+    function setForecast() {
+      const val = parseInt(document.getElementById("forecastInput").value);
+      if (!isNaN(val)) {
+        forecast = val;
+        document.getElementById("forecastDisplay").innerText = forecast;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".park-btn").forEach(btn => {
+        btn.addEventListener("click", () => parkCar(btn.dataset.type));
+      });
+      document.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", () => removeCar(btn.dataset.type));
+      });
+      updateDisplay();
+    });
+  </script>
+</body>
+</html>
